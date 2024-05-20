@@ -15,14 +15,24 @@ import ballerina/log;
 
 isolated service / on new http:Listener(9091) {
 
-    resource function get getKey(string? name) returns string|error {
-        int TestKey = os:getEnv("TEST_KEY");
-        log:printInfo("Pinecone Service URL: ");
+    resource function get getKey(string name) returns string|error {
+    string TestKey = os:getEnv("TEST_KEY");
+    log:printInfo("Pinecone Service URL: ");
 
-        if name is () {
-            return error("name should not be empty!");
-        }
-        return string `Hello, ${name}, Your key is ${TestKey*2}!`;
+    if name is () {
+        return error("Name should not be empty!");
+    } else if TestKey is () {
+        return error("TestKey is not defined in the environment variables.");
     }
+
+    int|error convertedKey = int:fromString(TestKey);
+    if convertedKey is error {
+        return error("Failed to convert TestKey to an integer.");
+    }
+
+    int result = convertedKey * 2;
+    return string `Hello, ${name}, Your key is ${result}!`;
+}
+
 }
 
